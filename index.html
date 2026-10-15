@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nicho Finder | Comércios reais no Brasil</title>
+<meta name="description" content="Encontre comércios reais em qualquer cidade do Brasil, com site, telefone e WhatsApp.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d4ed8'/><circle cx='16' cy='14' r='5' fill='none' stroke='white' stroke-width='3'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1d4ed8;--blue-2:#2563eb;--soft:#eff6ff;--line:#dbe6fb;--ink:#0f1b3d;--mute:#5b6b8c;--ok:#0f7a4d;--okbg:#e7f7ef;--no:#8a5a00;--nobg:#fff4de}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);background:#fff;line-height:1.5;min-height:100vh}
+.wrap{max-width:780px;margin:0 auto;padding:0 20px}
+header{padding:22px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--blue);letter-spacing:-.02em}
+.brand svg{width:34px;height:34px}
+.brand .pin{transform-origin:50% 100%;animation:drop .9s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes drop{from{transform:translateY(-14px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-.035em;line-height:1.08;margin-top:44px;color:var(--ink)}
+h1 span{color:var(--blue)}
+.lead{color:var(--mute);margin-top:14px;max-width:46ch}
+form{margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{position:relative}
+.field label{position:absolute;left:16px;top:8px;font-size:.72rem;font-weight:600;color:var(--mute);pointer-events:none}
+.field input{width:100%;padding:26px 16px 10px;border:1.5px solid var(--line);border-radius:14px;font:inherit;font-weight:500;color:var(--ink);background:#fff;transition:border-color .2s,box-shadow .2s}
+.field input:focus{outline:none;border-color:var(--blue-2);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+.btn{font:inherit;font-weight:600;border:0;cursor:pointer;border-radius:14px;transition:transform .15s,background .2s,box-shadow .2s}
+.btn:focus-visible{outline:3px solid rgba(37,99,235,.4);outline-offset:2px}
+.find{grid-column:1/-1;background:var(--blue);color:#fff;padding:16px;font-size:1.05rem;box-shadow:0 8px 20px -8px rgba(29,78,216,.6);display:flex;align-items:center;justify-content:center;gap:10px}
+.find:hover{background:var(--blue-2);transform:translateY(-2px)}
+.find:active{transform:scale(.98)}
+.find:disabled{opacity:.75;cursor:wait;transform:none}
+.spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:none}
+.loading .spin{display:block}
+@keyframes rot{to{transform:rotate(360deg)}}
+#msg{margin-top:18px;color:var(--mute);min-height:1.5em}
+#msg.err{color:#b42318}
+.bar{display:none;align-items:center;justify-content:space-between;margin-top:36px;padding-bottom:12px;border-bottom:2px solid var(--blue)}
+.bar.on{display:flex}
+.bar b{font-size:1.05rem}
+.bar small{color:var(--mute);display:block}
+.reload{background:var(--soft);color:var(--blue);padding:10px 16px;font-size:.92rem}
+.reload:hover{background:var(--blue);color:#fff}
+.reload svg{width:15px;height:15px;vertical-align:-2px;margin-right:6px;transition:transform .5s}
+.reload:hover svg{transform:rotate(180deg)}
+ul{list-style:none;padding:0;margin-bottom:60px}
+li{opacity:0;animation:in .45s ease forwards;animation-delay:calc(var(--i)*55ms)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.row{width:100%;display:flex;align-items:center;gap:14px;padding:16px 10px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer;border-radius:10px;transition:background .2s,padding .2s}
+.row:hover,.row:focus-visible{background:var(--soft);padding-left:18px;outline:none}
+.name{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:.76rem;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.badge.yes{background:var(--okbg);color:var(--ok)}
+.badge.no{background:var(--nobg);color:var(--no)}
+.tel{color:var(--mute);font-size:.88rem;min-width:118px;text-align:right}
+.chev{color:var(--blue);transition:transform .2s}
+.row:hover .chev{transform:translateX(4px)}
+.empty{padding:34px 0;color:var(--mute)}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--mute);font-size:.84rem}
+footer a{color:var(--blue)}
+/* modal */
+.back{position:fixed;inset:0;background:rgba(15,27,61,.45);display:none;align-items:flex-end;justify-content:center;padding:16px;z-index:10}
+.back.on{display:flex;animation:fade .2s ease}
+@media(min-width:600px){.back{align-items:center}}
+@keyframes fade{from{opacity:0}}
+.modal{background:#fff;border-radius:22px;width:100%;max-width:460px;padding:28px;animation:pop .3s cubic-bezier(.2,1.2,.4,1);max-height:92vh;overflow:auto}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.modal h2{font-size:1.4rem;letter-spacing:-.02em;color:var(--blue);padding-right:30px}
+.x{float:right;background:var(--soft);color:var(--blue);width:34px;height:34px;font-size:1.2rem;line-height:1;margin:-4px -4px 0 0}
+.x:hover{background:var(--blue);color:#fff}
+dl{margin-top:18px}
+dt{font-size:.74rem;font-weight:600;color:var(--mute);margin-top:16px}
+dd{margin-top:2px;word-break:break-word}
+dd a{color:var(--blue);font-weight:600;text-decoration:none}
+dd a:hover{text-decoration:underline}
+.na{color:#93a0bb}
+.actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.actions a{flex:1;text-align:center;text-decoration:none;padding:12px;border-radius:12px;font-weight:600;font-size:.94rem;min-width:130px;transition:transform .15s,background .2s}
+.actions a:hover{transform:translateY(-2px)}
+.a-wa{background:#16a34a;color:#fff}.a-map{background:var(--soft);color:var(--blue)}
+@media(max-width:560px){form{grid-template-columns:1fr}.tel{display:none}.row{gap:10px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0ms!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#1d4ed8"/><g class="pin"><path d="M17 7c-4 0-7 3-7 7 0 5 7 12 7 12s7-7 7-12c0-4-3-7-7-7z" fill="#fff"/><circle cx="17" cy="14" r="2.8" fill="#1d4ed8"/></g></svg>
+      Nicho Finder
+    </div>
+  </header>
+
+  <main>
+    <h1>Encontre comércios <span>reais</span> em qualquer cidade do Brasil.</h1>
+    <p class="lead">Digite a cidade e o nicho. Veja quem tem site e pegue telefone e WhatsApp.</p>
+
+    <form id="form" autocomplete="off">
+      <div class="field"><input id="city" required minlength="2" placeholder=" " aria-label="Cidade"><label for="city">Cidade</label></div>
+      <div class="field"><input id="niche" required minlength="2" placeholder=" " aria-label="Nicho"><label for="niche">Nicho (ex: barbearia, mercado)</label></div>
+      <button class="btn find" id="go" type="submit"><span class="spin"></span><span id="golabel">Encontrar</span></button>
+    </form>
+    <p id="msg" role="status"></p>
+
+    <div class="bar" id="bar">
+      <div><b id="count"></b><small id="where"></small></div>
+      <button class="btn reload" id="reload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Recarregar</button>
+    </div>
+    <ul id="list"></ul>
+  </main>
+</div>
+
+<footer><div class="wrap">Dados do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. Informações colaborativas: algumas lojas podem não ter telefone ou site cadastrado.</div></footer>
+
+<div class="back" id="back"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <button class="btn x" id="close" aria-label="Fechar">&times;</button>
+  <h2 id="mt"></h2>
+  <dl id="info"></dl>
+  <div class="actions" id="acts"></div>
+</div></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PAGE = 10;
+let pool = [], seen = new Set(), shown = [];
+
+function setMsg(t, err) { const m = $('#msg'); m.textContent = t || ''; m.className = err ? 'err' : ''; }
+function busy(on) { $('#form').classList.toggle('loading', on); $('#go').disabled = on; $('#golabel').textContent = on ? 'Buscando...' : 'Encontrar'; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function nextBatch() {
+  const fresh = shuffle(pool.filter((p) => !seen.has(p.id)));
+  let batch = fresh.slice(0, PAGE);
+  if (batch.length < PAGE) { // acabaram as novas: completa com algumas já vistas
+    const ids = new Set(batch.map((p) => p.id));
+    batch = batch.concat(shuffle(pool.filter((p) => !ids.has(p.id))).slice(0, PAGE - batch.length));
+    if (!fresh.length) seen.clear();
+  }
+  batch.forEach((p) => seen.add(p.id));
+  return batch;
+}
+
+function render() {
+  shown = nextBatch();
+  $('#list').innerHTML = shown.map((p, i) => `
+    <li style="--i:${i}"><button class="row" data-i="${i}">
+      <span class="name">${esc(p.name)}</span>
+      <span class="badge ${p.website ? 'yes' : 'no'}">${p.website ? 'Com site' : 'Sem site'}</span>
+      <span class="tel">${p.phone ? esc(p.phone) : '<span class="na">Sem telefone</span>'}</span>
+      <span class="chev">&rsaquo;</span>
+    </button></li>`).join('');
+  $('#reload').style.display = pool.length > PAGE ? '' : 'none';
+}
+
+$('#form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const city = $('#city').value.trim(), niche = $('#niche').value.trim();
+  busy(true); setMsg('Procurando comércios em ' + city + '...');
+  $('#bar').classList.remove('on'); $('#list').innerHTML = '';
+  try {
+    const r = await fetch('/api/search?city=' + encodeURIComponent(city) + '&niche=' + encodeURIComponent(niche));
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Erro na busca.');
+    pool = d.results; seen.clear();
+    if (!pool.length) { setMsg('Nenhum comércio de "' + niche + '" encontrado em ' + city + '. Tente um termo mais simples, como "padaria".', true); return; }
+    setMsg('');
+    $('#count').textContent = d.total + (d.total === 1 ? ' comércio encontrado' : ' comércios encontrados');
+    $('#where').textContent = 'Mostrando ' + Math.min(PAGE, d.total) + ' por vez';
+    $('#bar').classList.add('on');
+    render();
+    $('#bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) { setMsg(err.message, true); }
+  finally { busy(false); }
+});
+
+$('#reload').addEventListener('click', () => { render(); $('#bar').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+
+$('#list').addEventListener('click', (e) => {
+  const b = e.target.closest('.row'); if (!b) return;
+  const p = shown[+b.dataset.i];
+  $('#mt').textContent = p.name;
+  const na = '<span class="na">Não informado</span>';
+  const addr = p.address || (p.lat ? 'Sem endereço cadastrado (veja no mapa)' : '');
+  $('#info').innerHTML = `
+    <dt>Onde fica</dt><dd>${addr ? esc(addr) : na}</dd>
+    <dt>Site</dt><dd>${p.website ? `<a href="${esc(p.website)}" target="_blank" rel="noopener">${esc(p.website.replace(/^https?:\/\//, ''))}</a>` : 'Não tem site'}</dd>
+    <dt>Telefone</dt><dd>${p.phone ? `<a href="tel:${esc(p.phone.replace(/[^\d+]/g, ''))}">${esc(p.phone)}</a>` : na}</dd>
+    <dt>WhatsApp</dt><dd>${p.whatsapp ? `<a href="https://wa.me/${esc(p.whatsapp)}" target="_blank" rel="noopener">${esc(p.whatsapp.replace(/^55(\d\d)(\d{5})(\d{4})$/, '+55 ($1) $2-$3'))}</a>` : na}</dd>`;
+  $('#acts').innerHTML =
+    (p.whatsapp ? `<a class="a-wa" href="https://wa.me/${esc(p.whatsapp)}" target="_blank" rel="noopener">Chamar no WhatsApp</a>` : '') +
+    (p.lat ? `<a class="a-map" href="https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lon}#map=18/${p.lat}/${p.lon}" target="_blank" rel="noopener">Ver no mapa</a>` : '');
+  $('#back').classList.add('on'); $('#close').focus();
+});
+
+const closeModal = () => $('#back').classList.remove('on');
+$('#close').addEventListener('click', closeModal);
+$('#back').addEventListener('click', (e) => { if (e.target.id === 'back') closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
